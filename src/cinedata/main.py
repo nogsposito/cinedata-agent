@@ -23,28 +23,15 @@ from .database import (
 )
 
 
+from .agent import agent
+
+
 def main():
-    print(
-        get_table_info("dim_movies")
+    result = agent.run_sync(
+        "Quais são os 5 filmes com maior receita em reais?"
     )
 
-    print(
-        get_distinct_values(
-            "dim_people",
-            "tipo_pessoa",
-        )
-    )
-
-    print(
-        execute_query(
-            """
-            SELECT titulo, ano_lancamento
-            FROM dim_movies
-            LIMIT 5
-            """
-        )
-    )
-
+    print(result.output)
 
 if __name__ == "__main__":
     main()
