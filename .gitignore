@@ -1,0 +1,22 @@
+# Ambiente virtual
+.venv/
+
+# Variáveis de ambiente
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+
+# VS Code
+.vscode/
+
+# Pytest
+.pytest_cache/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Banco fornecido pela atividade
+cinerocket.db
