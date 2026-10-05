@@ -146,6 +146,15 @@ Para executar:
 python -m src.cinedata.evaluation
 ```
 
+## Interface com Streamlit
+
+Além da execução pelo terminal, o projeto possui uma interface simples em Streamlit para facilitar o uso do agente.
+
+Para iniciar a interface, execute na raiz do projeto:
+
+```bash
+python -m streamlit run src/cinedata/app.py
+
 ## Observações
 
 O agente utiliza o banco `cinerocket.db` como fonte de dados e retorna também a consulta SQL utilizada para gerar cada resposta.
