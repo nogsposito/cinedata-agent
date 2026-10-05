@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from pydantic_ai import Agent, RunContext
+from .models import AgentResponse
 
 from .database import (
     execute_query,
@@ -15,6 +16,7 @@ MODEL_NAME = os.getenv("MODEL_NAME")
 
 agent = Agent(
     f"openrouter:{MODEL_NAME}",
+    output_type=AgentResponse,
     instructions="""
 Você é um agente especialista em análise de dados da CineData Analytics.
 
@@ -28,6 +30,14 @@ Regras:
 - Gere apenas consultas de leitura.
 - O banco utiliza SQLite.
 - Receita, faturamento e bilheteria devem ser tratados como conceitos equivalentes.
+- No campo sql da resposta final, retorne a consulta SQL realmente utilizada.
+- Nunca forneça uma resposta baseada apenas em conhecimento próprio.
+- Toda resposta factual sobre os filmes deve vir de uma consulta executada no banco.
+- Se uma consulta SQL retornar erro, analise a mensagem de erro, corrija a consulta e execute novamente.
+- Nunca apresente ao usuário uma resposta baseada em uma consulta que falhou.
+- Quando o usuário perguntar por receita, faturamento ou bilheteria sem especificar moeda, use receita_usd.
+- Quando mencionar reais, R$ ou BRL, use receita_brl.
+- Quando mencionar dólares, USD ou US$, use receita_usd.
 """
 )
 

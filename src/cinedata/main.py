@@ -26,12 +26,23 @@ from .database import (
 from .agent import agent
 
 
+from .agent import agent
+
+
 def main():
     result = agent.run_sync(
-        "Quais são os 5 filmes com maior receita em reais?"
+        """
+        Qual filme possui a maior bilheteria?
+        Verifique os dados no banco antes de responder.
+        """
     )
 
-    print(result.output)
+    print("Resposta:")
+    print(result.output.answer)
+
+    print("\nSQL utilizado:")
+    print(result.output.sql)
+
 
 if __name__ == "__main__":
     main()

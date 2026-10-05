@@ -16,7 +16,9 @@ FORBIDDEN_COMMANDS = [
     "REPLACE",
 ]
 
+MAX_ROWS = 100
 
+# Retorna informações sobre uma tabela do banco, incluindo o schema e exemplos de linhas.
 def get_table_info(table_name: str) -> str:
     conn = get_connection()
     cursor = conn.cursor()
@@ -50,7 +52,7 @@ def get_table_info(table_name: str) -> str:
         f"Exemplos:\n{rows}"
     )
 
-
+# Retorna valores distintos de uma coluna de uma tabela do banco, limitando a quantidade de resultados.
 def get_distinct_values(
     table_name: str,
     column_name: str,
@@ -73,39 +75,68 @@ def get_distinct_values(
 
     return [row[0] for row in rows]
 
+# Limpa a consulta SQL removendo blocos de código e espaços em branco desnecessários.
+def clean_query(query: str) -> str:
+    query = query.strip()
 
+    if query.startswith("```"):
+        lines = query.splitlines()
+
+        lines = lines[1:]
+
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+
+        query = "\n".join(lines).strip()
+
+    return query
+
+# Executa uma consulta SQL no banco e retorna os resultados, garantindo que apenas consultas de leitura sejam permitidas.
 def execute_query(query: str) -> dict:
+    query = clean_query(query)
+
     normalized_query = query.strip().upper()
 
     for command in FORBIDDEN_COMMANDS:
         if command in normalized_query:
-            raise ValueError(
-                f"Comando SQL não permitido: {command}"
-            )
+            return {
+                "success": False,
+                "error": f"Comando SQL não permitido: {command}",
+            }
 
     if not (
         normalized_query.startswith("SELECT")
         or normalized_query.startswith("WITH")
     ):
-        raise ValueError(
-            "Apenas consultas SELECT ou WITH são permitidas."
-        )
+        return {
+            "success": False,
+            "error": "Apenas consultas SELECT ou WITH são permitidas.",
+        }
 
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute(query)
+    try:
+        cursor.execute(query)
 
-    rows = cursor.fetchall()
+        columns = [
+            description[0]
+            for description in cursor.description
+        ]
 
-    columns = [
-        description[0]
-        for description in cursor.description
-    ]
+        rows = cursor.fetchmany(MAX_ROWS)
 
-    conn.close()
+        return {
+            "success": True,
+            "columns": columns,
+            "rows": rows,
+        }
 
-    return {
-        "columns": columns,
-        "rows": rows,
-    }
+    except sqlite3.Error as error:
+        return {
+            "success": False,
+            "error": str(error),
+        }
+
+    finally:
+        conn.close()
