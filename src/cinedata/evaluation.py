@@ -102,7 +102,11 @@ EXPECTED_PATTERNS = {
 def evaluate_sql(question: str, sql: str) -> list[str]:
     warnings = []
 
-    expected_patterns = EXPECTED_PATTERNS.get(question, [])
+    expected_patterns = EXPECTED_PATTERNS.get(
+        question,
+        [],
+    )
+
     normalized_sql = sql.upper()
 
     for pattern in expected_patterns:
@@ -117,6 +121,7 @@ def evaluate_sql(question: str, sql: str) -> list[str]:
 def main():
     passed = 0
     failed = 0
+    with_warnings = 0
 
     for index, question in enumerate(QUESTIONS, start=1):
         print()
@@ -138,9 +143,13 @@ def main():
             )
 
             if warnings:
+                with_warnings += 1
+
                 print("\nAvisos:")
+
                 for warning in warnings:
                     print(f"- {warning}")
+
             else:
                 print("\nValidação básica: OK")
                 passed += 1
@@ -154,8 +163,14 @@ def main():
     print("\n" + "=" * 70)
     print("RESUMO DA AVALIAÇÃO")
     print(f"Validações sem avisos: {passed}")
+    print(f"Casos com avisos: {with_warnings}")
     print(f"Erros de execução: {failed}")
     print(f"Total de perguntas: {len(QUESTIONS)}")
+
+    print(
+        "Esta avaliação verifica padrões SQL; "
+        "não comprova a correção dos resultados."
+    )
 
 
 if __name__ == "__main__":

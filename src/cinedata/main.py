@@ -1,32 +1,24 @@
-import os
-
-from dotenv import load_dotenv
-from httpx2 import query
-from pydantic_ai import Agent
-
-from .database import get_distinct_values, execute_query
-
-load_dotenv()
-
-MODEL_NAME = os.getenv("MODEL_NAME")
-
-agent = Agent(
-    f"openrouter:{MODEL_NAME}"
-)
-
 from .agent import agent
 
 
 def main():
-    question = input("Pergunta: ")
+    question = input("Pergunta: ").strip()
 
-    result = agent.run_sync(question)
+    if not question:
+        print("Digite uma pergunta.")
+        return
 
-    print("\nResposta:")
-    print(result.output.answer)
+    try:
+        result = agent.run_sync(question)
 
-    print("\nSQL utilizado:")
-    print(result.output.sql)
+        print("\nResposta:")
+        print(result.output.answer)
+
+        print("\nSQL utilizado:")
+        print(result.output.sql)
+
+    except Exception as error:
+        print(f"Erro ao processar consulta: {error}")
 
 
 if __name__ == "__main__":

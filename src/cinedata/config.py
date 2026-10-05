@@ -5,21 +5,18 @@ from dotenv import load_dotenv
 
 
 BASE_DIR = Path(__file__).resolve().parents[2]
-ENV_PATH = BASE_DIR / ".env"
 
-load_dotenv(ENV_PATH)
+load_dotenv(BASE_DIR / ".env")
 
-
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-MODEL_NAME = os.getenv("MODEL_NAME")
-
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
+MODEL_NAME = os.getenv("MODEL_NAME", "openrouter/free").strip()
 
 if not OPENROUTER_API_KEY:
     raise ValueError(
-        "OPENROUTER_API_KEY não encontrada no .env."
+        "Configure OPENROUTER_API_KEY no arquivo .env da raiz do projeto."
     )
 
 if not MODEL_NAME:
     raise ValueError(
-        "MODEL_NAME não encontrado no .env."
+        "Configure MODEL_NAME no arquivo .env da raiz do projeto."
     )

@@ -1,11 +1,16 @@
 import sqlite3
+from pathlib import Path
 
 
-DB_PATH = "cinerocket.db"
+DB_PATH = Path(__file__).resolve().parents[2] / "cinerocket.db"
 
 
 def main():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(
+        DB_PATH.as_uri() + "?mode=ro",
+        uri=True,
+    )
+
     cursor = conn.cursor()
 
     cursor.execute(
@@ -17,12 +22,18 @@ def main():
         """
     )
 
-    tables = [row[0] for row in cursor.fetchall()]
+    tables = [
+        row[0]
+        for row in cursor.fetchall()
+    ]
 
     for table in tables:
         print(f"\n=== {table} ===")
 
-        cursor.execute(f"PRAGMA table_info({table})")
+        cursor.execute(
+            f"PRAGMA table_info({table})"
+        )
+
         columns = cursor.fetchall()
 
         for column in columns:
@@ -35,22 +46,28 @@ def main():
                 f"pk={pk}"
             )
 
-    cursor.execute(f"PRAGMA foreign_key_list({table})")
-    foreign_keys = cursor.fetchall()
+        cursor.execute(
+            f"PRAGMA foreign_key_list({table})"
+        )
 
-    if foreign_keys:
-        print("Foreign keys:")
+        foreign_keys = cursor.fetchall()
 
-        for fk in foreign_keys:
-            print(fk)
+        if foreign_keys:
+            print("Foreign keys:")
 
-    cursor.execute(f"SELECT * FROM {table} LIMIT 3")
-    rows = cursor.fetchall()
+            for fk in foreign_keys:
+                print(fk)
 
-    print("Exemplos:")
+        cursor.execute(
+            f"SELECT * FROM {table} LIMIT 3"
+        )
 
-    for row in rows:
-        print(row)
+        rows = cursor.fetchall()
+
+        print("Exemplos:")
+
+        for row in rows:
+            print(row)
 
     queries = [
         "SELECT DISTINCT tipo_pessoa FROM dim_people;",
@@ -63,6 +80,7 @@ def main():
         cursor.execute(query)
 
         print(f"\n{query}")
+
         for row in cursor.fetchall():
             print(row)
 

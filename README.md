@@ -10,10 +10,9 @@ O objetivo é permitir que usuários façam perguntas em linguagem natural sobre
 - PydanticAI
 - SQLite
 - OpenRouter
+- Streamlit
 
 ## Como funciona
-
-O fluxo principal é:
 
 ```text
 Pergunta em linguagem natural
@@ -31,108 +30,120 @@ O agente possui ferramentas para:
 
 - consultar o schema das tabelas;
 - consultar valores distintos de colunas;
-- executar consultas SQL;
-- corrigir consultas quando ocorre erro.
+- executar consultas SQL.
+
+Quando uma consulta retorna erro, o agente recebe a mensagem para tentar corrigir o SQL.
 
 ## Estrutura
 
 ```text
-src/
-└── cinedata/
-    ├── agent.py
-    ├── config.py
-    ├── database.py
-    ├── evaluation.py
-    ├── main.py
-    └── models.py
+cinedata-agent/
+├── .env.example
+├── .gitignore
+├── cinerocket.db
+├── requirements.txt
+├── README.md
+└── src/
+    ├── __init__.py
+    └── cinedata/
+        ├── __init__.py
+        ├── agent.py
+        ├── app.py
+        ├── config.py
+        ├── database.py
+        ├── evaluation.py
+        ├── inspect_db.py
+        ├── main.py
+        └── models.py
 ```
+
+O arquivo `.env` deve ser criado localmente e não deve ser enviado para o GitHub.
 
 ## Configuração
 
 Crie um arquivo `.env` na raiz do projeto:
 
-```env
+```dotenv
 OPENROUTER_API_KEY=sua_chave
 MODEL_NAME=openrouter/free
 ```
 
-O arquivo `.env` não deve ser enviado para o GitHub.
+Substitua `sua_chave` pela sua chave do OpenRouter.
 
 Coloque também o arquivo `cinerocket.db` na raiz do projeto.
 
 ## Instalação
 
-Crie o ambiente virtual:
+Na raiz do projeto, crie o ambiente virtual:
 
-```bash
+```powershell
 python -m venv .venv
 ```
 
-No Windows, ative com:
+No PowerShell, ative com:
 
-```bash
-.venv\Scripts\activate
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+No Prompt de Comando do Windows, ative com:
+
+```bat
+.venv\Scripts\activate.bat
 ```
 
 Instale as dependências:
 
-```bash
-pip install -r requirements.txt
+```powershell
+python -m pip install -r requirements.txt
 ```
 
-## Executar
+## Executar pelo terminal
 
 Na raiz do projeto:
 
-```bash
+```powershell
 python -m src.cinedata.main
 ```
 
 Exemplos de perguntas:
 
-```text
-Quais são os 5 filmes mais populares?
+- Quais são os 5 filmes mais populares?
+- Qual produtora possui o maior lucro total?
+- Quais diretores possuem maior nota média IMDb considerando pelo menos 5 filmes?
+
+## Interface com Streamlit
+
+Para iniciar a interface, execute na raiz do projeto:
+
+```powershell
+python -m streamlit run src/cinedata/app.py
 ```
 
-```text
-Qual produtora possui o maior lucro total?
-```
+O Streamlit disponibiliza a aplicação no navegador.
 
-```text
-Quais diretores possuem maior nota média IMDb considerando pelo menos 5 filmes?
-```
+Na interface, o usuário pode:
+
+- escrever uma pergunta em linguagem natural;
+- enviar a pergunta para o agente;
+- visualizar a resposta;
+- expandir a seção com o SQL utilizado.
 
 ## Segurança
 
-O agente permite apenas consultas SQL de leitura.
+A ferramenta de execução aceita consultas iniciadas por `SELECT` ou `WITH`.
 
-São aceitas consultas iniciadas por:
+A conexão abre o banco somente para leitura. O autorizador SQLite restringe as operações permitidas durante a execução das consultas.
 
-```sql
-SELECT
-WITH
-```
+Os nomes de tabelas e colunas usados pela ferramenta de valores distintos são validados contra o schema.
 
-Comandos de alteração do banco são bloqueados, como:
+Os resultados das consultas são limitados a 100 linhas. Quando há mais resultados, a ferramenta informa o truncamento.
 
-```sql
-INSERT
-UPDATE
-DELETE
-DROP
-ALTER
-CREATE
-```
+Consultas excessivamente caras podem ser interrompidas pelo limite de operações configurado.
 
 ## Avaliação
 
-O projeto possui um conjunto de perguntas em:
-
-```text
-src/cinedata/evaluation.py
-```
-
-As perguntas cobrem categorias como:
+O projeto possui 14 perguntas em `src/cinedata/evaluation.py`, cobrindo:
 
 - bilheteria e finanças;
 - popularidade;
@@ -142,19 +153,26 @@ As perguntas cobrem categorias como:
 
 Para executar:
 
-```bash
+```powershell
 python -m src.cinedata.evaluation
 ```
 
-## Interface com Streamlit
+O script apresenta a resposta, o SQL e avisos sobre padrões esperados. Ao final, informa os casos sem avisos, os casos com avisos e os erros de execução.
 
-Além da execução pelo terminal, o projeto possui uma interface simples em Streamlit para facilitar o uso do agente.
+Essa avaliação é heurística: verificar padrões no SQL não comprova a correção semântica dos resultados.
 
-Para iniciar a interface, execute na raiz do projeto:
+## Inspecionar o banco
 
-```bash
-python -m streamlit run src/cinedata/app.py
+Para visualizar tabelas, colunas, chaves estrangeiras e exemplos:
+
+```powershell
+python -m src.cinedata.inspect_db
+```
 
 ## Observações
 
-O agente utiliza o banco `cinerocket.db` como fonte de dados e retorna também a consulta SQL utilizada para gerar cada resposta.
+O agente utiliza `cinerocket.db` como fonte de dados.
+
+O uso depende de uma chave válida, conexão com a internet e disponibilidade do modelo no OpenRouter.
+
+A resposta estruturada contém os campos `answer` e `sql`. As instruções orientam o agente a informar o SQL realmente utilizado.
