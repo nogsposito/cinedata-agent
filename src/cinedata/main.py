@@ -6,8 +6,6 @@ from pydantic_ai import Agent
 
 from .database import get_distinct_values, execute_query
 
-from .config import OPENROUTER_API_KEY
-
 load_dotenv()
 
 MODEL_NAME = os.getenv("MODEL_NAME")
@@ -16,28 +14,15 @@ agent = Agent(
     f"openrouter:{MODEL_NAME}"
 )
 
-from .database import (
-    execute_query,
-    get_distinct_values,
-    get_table_info,
-)
-
-
-from .agent import agent
-
-
 from .agent import agent
 
 
 def main():
-    result = agent.run_sync(
-        """
-        Qual filme possui a maior bilheteria?
-        Verifique os dados no banco antes de responder.
-        """
-    )
+    question = input("Pergunta: ")
 
-    print("Resposta:")
+    result = agent.run_sync(question)
+
+    print("\nResposta:")
     print(result.output.answer)
 
     print("\nSQL utilizado:")
