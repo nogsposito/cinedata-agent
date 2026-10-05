@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from pydantic_ai import Agent, RunContext
 from .models import AgentResponse
 
+from .config import MODEL_NAME
+
 from .database import (
     execute_query,
     get_distinct_values,
@@ -17,6 +19,7 @@ MODEL_NAME = os.getenv("MODEL_NAME")
 agent = Agent(
     f"openrouter:{MODEL_NAME}",
     output_type=AgentResponse,
+    retries=2,
     instructions="""
 Você é um agente especialista em análise de dados da CineData Analytics.
 
